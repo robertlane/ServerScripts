@@ -1,0 +1,94 @@
+#!/bin/bash
+# /etc/init.d/ut2004
+# version 0.0.1 2013-10-22 (YYYY-MM-DD)
+
+### BEGIN INIT INFO
+# Provides:   iTunes
+# Required-Start: $local_fs
+# Required-Stop:  $local_fs
+# Should-Start:   $network
+# Should-Stop:    $network
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description:    Apple iTunes
+# Description:    Starts Apple iTunes
+### END INIT INFO
+
+#Settings (Change name to VM name)
+NAME="mednafen-server"
+USERNAME='mednafen'
+CONFIG='/opt/mednafen-server/standard.conf'
+LOG='/opt/mednafen-server/mednafen.log'
+INVOCATION="mednafen-server $CONFIG > $LOG &"
+
+ME=`whoami`
+as_user() {
+  if [ $ME == $USERNAME ] ; then
+    bash -c "$1"
+  else
+    su - $USERNAME -c "$1"
+  fi
+}
+
+vm_start() {
+  if  pgrep -u $USERNAME -f $NAME > /dev/null
+  then
+    echo "$NAME is already running!"
+  else
+    echo "Starting $NAME..."
+    as_user "$INVOCATION"
+    sleep 3
+    if pgrep -u $USERNAME -f $NAME > /dev/null
+    then
+      echo "$NAME is now running."
+    else
+      echo "Error! Could not start $NAME!"
+    fi
+  fi
+}
+
+vm_stop() {
+  if pgrep -u $USERNAME -f $NAME > /dev/null
+  then
+    echo "Stopping $NAME"
+    as_user "pkill -u $USERNAME -f $NAME"
+    sleep 1
+  else
+    echo "$SERVICE was not running."
+  fi
+  if pgrep -u $USERNAME -f $NAME > /dev/null
+  then
+    echo "Error! $NAME could not be stopped."
+  else
+    echo "$NAME is stopped."
+  fi
+}
+
+#Start-Stop here
+case "$1" in
+  start)
+    vm_start
+    ;;
+  stop)
+    vm_stop
+    ;;
+  restart)
+    vm_stop
+    vm_start
+    ;;
+  status)
+    if pgrep -u $USERNAME -f $NAME > /dev/null
+    then
+      echo "$NAME is running."
+    else
+      echo "$NAME is not running."
+    fi
+    ;;
+
+  *)
+  echo "Usage: $0 {start|stop|status|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0

@@ -1,0 +1,104 @@
+#!/bin/bash
+# /etc/init.d/ut2004
+# version 0.0.1 2013-10-22 (YYYY-MM-DD)
+
+### BEGIN INIT INFO
+# Provides:   ut2004
+# Required-Start: $local_fs
+# Required-Stop:  $local_fs
+# Should-Start:   $network
+# Should-Stop:    $network
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description:    Unreal Tournament 2004 Server
+# Description:    Starts the Unreal Tournament 2004 Server
+### END INIT INFO
+
+#Game Types
+ONSLAUGHT="ONS-Torlan?game=Onslaught.ONSOnslaughtGame"
+DEATHMATCH="DM-Rankin?game=XGame.xDeathMatch"
+TEAMDM="DM-Rankin?game=XGame.xTeamGame"
+ASSAULT="AS-MotherShip?game=UT2k4Assault.ASGameInfo"
+CTF="CTF-FaceClassic?game=XGame.xCTFGame"
+BOMBINGRUN="BR-Serenity?game=XGame.xBombingRun"
+
+#Settings
+NAME="Unreal Tournament 2004"
+SERVICE="ucc-bin-linux-amd64"
+GAMETYPE=$ONSLAUGHT
+USERNAME='ut2004'
+UTPATH='/opt/unreal2k4'
+INVOCATION="./ucc-bin-linux-amd64 server $GAMETYPE ini=ut2004.ini log=server.log -nohomedir > /dev/null 2>&1 &"
+
+ME=`whoami`
+as_user() {
+  if [ $ME == $USERNAME ] ; then
+    bash -c "$1"
+  else
+    su - $USERNAME -c "$1"
+  fi
+}
+
+ut_start() {
+  if  pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+    echo "$NAME is already running!"
+  else
+    echo "Starting $NAME..."
+    cd $UTPATH
+    as_user "cd $UTPATH/System && $INVOCATION"
+    sleep 5
+    if pgrep -u $USERNAME -f $SERVICE > /dev/null
+    then
+      echo "$NAME is now running."
+    else
+      echo "Error! Could not start $NAME!"
+    fi
+  fi
+}
+
+ut_stop() {
+  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+    echo "Stopping $NAME"
+    as_user "killall $SERVICE"
+    sleep 3
+  else
+    echo "$SERVICE was not running."
+  fi
+  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+    echo "Error! $NAME could not be stopped."
+  else
+    echo "$NAME is stopped."
+  fi
+}
+
+#Start-Stop here
+case "$1" in
+  start)
+    ut_start
+    ;;
+  stop)
+    ut_stop
+    ;;
+  restart)
+    ut_stop
+    ut_start
+    ;;
+  status)
+    if pgrep -u $USERNAME -f $SERVICE > /dev/null
+    then
+      echo "$NAME is running."
+    else
+      echo "$NAME is not running."
+    fi
+    ;;
+  
+  *)
+  echo "Usage: $0 {start|stop|status|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
