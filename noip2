@@ -1,0 +1,81 @@
+#!/bin/bash
+# /etc/init.d/ut2004
+# version 0.0.1 2013-10-22 (YYYY-MM-DD)
+
+### BEGIN INIT INFO
+# Provides: noip2
+# Required-Start: $network
+# Required-Stop: $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: NoIP Update Client
+# Description: Starts the NoIP Update Client
+### END INIT INFO
+
+#Settings
+NAME="NoIP Update Client"
+SERVICE="noip2"
+INVOCATION="$SERVICE"
+
+ut_start() {
+  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+echo "$NAME is already running!"
+  else
+echo "Starting $NAME..."
+    $INVOCATION
+    sleep 2
+    if pgrep -u $USERNAME -f $SERVICE > /dev/null
+    then
+echo "$NAME is now running."
+    else
+echo "Error! Could not start $NAME!"
+    fi
+fi
+}
+
+ut_stop() {
+  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+echo "Stopping $NAME"
+    killall $SERVICE
+    sleep 2
+  else
+echo "$SERVICE was not running."
+  fi
+if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  then
+echo "Error! $NAME could not be stopped."
+  else
+echo "$NAME is stopped."
+  fi
+}
+
+#Start-Stop here
+case "$1" in
+  start)
+    ut_start
+    ;;
+  stop)
+    ut_stop
+    ;;
+  restart)
+    ut_stop
+    ut_start
+    ;;
+  status)
+    if pgrep -u $USERNAME -f $SERVICE > /dev/null
+    then
+echo "$NAME is running."
+    else
+echo "$NAME is not running."
+    fi
+    ;;
+  
+  *)
+  echo "Usage: $0 {start|stop|status|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
