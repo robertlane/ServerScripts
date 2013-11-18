@@ -15,6 +15,7 @@
 #Settings
 NAME="NoIP Update Client"
 SERVICE="noip2"
+$USERNAME="root"
 INVOCATION="$SERVICE"
 
 ut_start() {
