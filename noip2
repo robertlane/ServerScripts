@@ -15,18 +15,17 @@
 #Settings
 NAME="NoIP Update Client"
 SERVICE="noip2"
-$USERNAME="root"
-INVOCATION="$SERVICE"
+INVOCATION="/usr/local/bin/noip2"
 
 ut_start() {
-  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  if noip2 -S 2>&1 | grep "Process" > /dev/null
   then
 echo "$NAME is already running!"
   else
 echo "Starting $NAME..."
     $INVOCATION
     sleep 2
-    if pgrep -u $USERNAME -f $SERVICE > /dev/null
+    if noip2 -S 2>&1 | grep "Process" > /dev/null
     then
 echo "$NAME is now running."
     else
@@ -36,7 +35,7 @@ fi
 }
 
 ut_stop() {
-  if pgrep -u $USERNAME -f $SERVICE > /dev/null
+  if noip2 -S 2>&1 | grep "Process" > /dev/null
   then
 echo "Stopping $NAME"
     killall $SERVICE
@@ -44,7 +43,7 @@ echo "Stopping $NAME"
   else
 echo "$SERVICE was not running."
   fi
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
+if noip2 -S 2>&1 | grep "Process" > /dev/null
   then
 echo "Error! $NAME could not be stopped."
   else
@@ -65,14 +64,9 @@ case "$1" in
     ut_start
     ;;
   status)
-    if pgrep -u $USERNAME -f $SERVICE > /dev/null
-    then
-echo "$NAME is running."
-    else
-echo "$NAME is not running."
-    fi
+    noip2 -S 2>&1 | head -1
     ;;
-  
+
   *)
   echo "Usage: $0 {start|stop|status|restart}"
   exit 1
